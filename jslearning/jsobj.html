@@ -1,0 +1,336 @@
+<!doctype html>
+<html>
+      <head>
+		   <style type="text/css">
+		       
+		   </style> 
+	  </head>
+      <body>
+	        <div id="divTest">
+				<span>0</span> <span>1</span> <span>2</span> <span>3</span>
+			</div>
+			<div id="divTest2">
+				<span>0</span> <span>1</span> <span>2</span> <span>3</span>
+			</div>
+           <script src="jquery-1.11.3.min.js"></script>
+		   <script type="text/javascript">
+		      
+				var Person = Object.create(null);
+				Object.defineProperties
+				(
+					Person,
+					{
+						'name'  : {  value: 'Chen Hao', writable: true},
+						'email'  : { value : 'haoel@hotmail.com'},
+						'website': { value: 'http://coolshell.cn'}
+					}
+				);
+				Person.sayHello = function () {
+					var hello = "<p>Hello, I am "+ this.name  + "， <br>" +
+								"my email is: " + this.email + "， <br>" +
+								"my website is: " + this.website;
+					document.write(hello + "<br>");
+				}
+				var Student = Object.create(Person);
+				Student.no = "1234567"; //学号
+				Student.dept = "Computer Science"; //系
+				//使用Person的属性
+				document.write(Student.name + ' ' + Student.email + ' ' + Student.website +'<br>');
+				//使用Person的方法
+				Student.sayHello();
+				//重载SayHello方法
+				Student.sayHello = function (person) {
+					var hello = "<p>Hello, I am "+ this.name  + "， <br>" +
+								"my email is: " + this.email + "， <br>" +
+								"my website is: " + this.website + "， <br>" +
+								"my student no is: " + this. no + "， <br>" +
+								"my departent is: " + this. dept;
+					document.write(hello + '<br>');
+				}
+				//再次调用
+				Student.sayHello();
+				//查看Student的属性（只有 no 、 dept 和 重载了的sayHello）
+				document.write('<p>' + Object.keys(Student) + '<br>');
+
+				Student.name = 'aaa';
+				//输出 aaa
+				document.write('<p>' + Student.name + '</p>');
+				//输出 Chen Hao
+				document.write('<p>' + Object.getPrototypeOf(Student).name + '</p>');
+
+
+
+				//新版的重载SayHello方法
+				Student.sayHello = function (person) {
+					Object.getPrototypeOf(this).sayHello.call(this);
+					var hello = "my student no is: " + this. no + "， <br>" +
+								"my departent is: " + this. dept;
+					document.write(hello + '<br>');
+				}
+				Student.sayHello();
+
+
+
+				/*------------prototype和继承------------*/
+				var Cal = function(x, y){
+				      this.x = x;
+					  this.y = y;
+				}
+
+				Cal.prototype.operations = {
+				     '+': function(x, y){ return x+y; },
+					 '-': function(x, y){ return x-y; }
+				};
+
+				Cal.prototype.calculate = function(operation){
+				      return this.operations[operation](this.x, this.y);
+				};
+
+				var c = new Cal(4, 5);
+				document.write(c.calculate('+')+"<br>");
+				document.write(c.calculate('-'));
+				document.write("<br><br><br><br>");
+
+				function Person1(name, email, website){
+				    this.name = name;
+					this.email = email;
+					this.website = website;
+				}
+
+                Person1.prototype.sayHello = function(){
+				    var hello = "Hello, I am " + this.name + ", <br>" +
+					            "my email is: " + this.email + ", <br>" +
+								"my website is: " + this.website;
+			         return hello;
+				};
+
+				function Student1(name, email, website, no, dept){
+				     var proto = Object.getPrototypeOf;
+					 proto(Student1.prototype).constructor.call(this, name, email, website);
+					 this.no = no;
+					 this.dept = dept;
+				}
+
+				// 继承prototype
+				Student1.prototype = Object.create(Person1.prototype);
+
+				//重置构造函数
+				Student1.prototype.constructor = Student1;
+
+				// 重载sayHello()
+				Student1.prototype.sayHello = function(){
+				     var proto = Object.getPrototypeOf;
+					 var hello = proto(Student1.prototype).sayHello.call(this) + "<br>";
+					 hello += "my student no is: " + this.no + ", <br>" + 
+					          "my department is: " + this.dept;
+		             return hello;
+				};
+
+				var me1 = new Student1(
+				    "Chen Hao",
+					"haoel@hotmail.com",
+					"http://coolshell.cn",
+					"12345678",
+					"Computer Science"
+				);
+
+				document.write(me1.sayHello());
+
+
+				/* 闭包:
+				 * 闭包最大用处有两个，一个是可以读取函数内部的变量，
+				 * 另一个就是让这些变量的值始终保持在内存中。
+				 */
+				function f1(){
+				    var n = 999;
+					nAdd = function(){n += 1;};
+					function f2(){
+					    alert(n);
+					}
+					return f2;
+				}
+
+				var result = f1();
+				result();   // 999
+				nAdd();
+				result();   // 1000
+
+
+                /* --------test1--------- */
+				var name = "The Window";
+			　　var object = {
+			　　　　name : "My Object",
+			　　　　getNameFunc : function(){
+			　　　　　　return function(){
+			　　　　　　　　return this.name;
+			　　　　　　};
+			　　　　}
+			　　};
+			　　alert(object.getNameFunc()());
+
+			    /* ------------test2----------- */
+				var name = "The Window";
+			　　var object = {
+			　　　　name : "My Object",
+			　　　　getNameFunc : function(){
+			　　　　　　var that = this;
+			　　　　　　return function(){
+			　　　　　　　　return that.name;
+			　　　　　　};
+			　　　　}
+			　　};
+			　　alert(object.getNameFunc()());
+
+
+			    
+
+                /* 我们开发中会碰到很多情况，设想我们有一个处理过程很耗时的函数对象，每次调用都会花费很长时间，
+                 * 那么我们就需要将计算出来的值存储起来，当调用这个函数的时候，首先在缓存中查找，如果找不到，则进行计算，然后更新缓存并返回值，
+				 * 如果找到了，直接返回查找到的值即可。
+				 * 闭包正是可以做到这一点，因为它不会释放外部的引用，从而函数内部的值可以得以保留。
+               */
+				var CachedSearchBox = (function(){    
+					var cache = {},    
+					   count = [];    
+					return {    
+					   attachSearchBox : function(dsid){    
+						   if(dsid in cache){//如果结果在缓存中    
+							  return cache[dsid];//直接返回缓存中的对象    
+						   }    
+						   var fsb = new uikit.webctrl.SearchBox(dsid);//新建    
+						   cache[dsid] = fsb;//更新缓存    
+						   if(count.length > 100){//保正缓存的大小<=100    
+							  delete cache[count.shift()];    
+						   }    
+						   return fsb;          
+					   },    
+					 
+					   clearSearchBox : function(dsid){    
+						   if(dsid in cache){    
+							  cache[dsid].clearSelection();      
+						   }    
+					   }    
+					};    
+				})();    
+				 
+			    // CachedSearchBox.attachSearchBox("input");    
+			
+			    // 这样我们在第二次调用的时候，就会从缓存中读取到该对象。
+
+
+                document.write("<br/><br/><br/>");
+				/*-------闭包示例-----------*/
+				function outerFn1(){
+				       var outerVar = 0;
+					   document.write("Outer function<br/>");
+					   function innerFn(){
+					        outerVar++;
+							document.write("Inner function\t");
+							document.write("outerVar = " + outerVar + "<br/>");
+					   }
+					   return innerFn;
+				}
+
+				var fnRefe = outerFn1();
+				fnRefe();    // 1
+				fnRefe();    // 2
+
+				var fnRefe2 = outerFn1();
+				fnRefe2();   // 1
+				fnRefe2();   // 2
+
+                document.write("<br/><br/><br/>");
+
+                /*-------闭包示例-----------*/
+				function outerFn() {
+					var outerVar = 0;
+					document.write("Outer function<br/>");
+					function innerFn1() {
+						outerVar++;
+						document.write("Inner function 1\t");
+						document.write("outerVar = " + outerVar + "<br/>");
+					}
+
+					function innerFn2() {
+						outerVar += 2;
+						document.write("Inner function 2\t");
+						document.write("outerVar = " + outerVar + "<br/>");
+					}
+					return { "fn1": innerFn1, "fn2": innerFn2 };
+				}
+
+				var fnRef = outerFn();
+				fnRef.fn1();   // 1
+				fnRef.fn2();   // 3
+				fnRef.fn1();   // 4
+
+				var fnRef2 = outerFn();
+				fnRef2.fn1();  // 1
+				fnRef2.fn2();  // 3
+				fnRef2.fn1();  // 4
+
+                /*----------示例-------------*/
+				$(document).ready(function(){
+				        var spans = $("#divTest span");
+						for (var i = 0; i < spans.length; i++) {
+							spans[i].onclick = function() {
+								alert(i);                // 每次alert出的值都是4
+							}
+						}
+                        /* 上面代码在页面加载后就会执行，当i的值为4的时候，判断条件不成立，for循环执行完毕，但是因为每个span的onclick方法这时候为内部函数，所以i被闭包   引用，内存不能被销毁，i的值会一直保持4，直到程序改变它或者所有的onclick函数销毁（主动把函数赋为null或者页面卸载）时才会被回收。这样每次我们点击span的时候，onclick函数会查找i的值（作用域链是引用方式），一查等于4，然后就alert给我们了。
+						*/
+
+
+						var spans2 = $("#divTest2 span");
+						for (var i = 0; i < spans2.length; i++) {
+							(function(num) {
+								spans2[i].onclick = function() {
+									alert(num);           // alert 0, 1, 2, 3
+								}
+							})(i);
+						}
+						var a={};
+						alert((typeof a) !== "object");
+						/*
+						 该方式使用了一个立即执行的函数又创建了一层闭包，函数声明放在括号内就变成了表达式，后面再加上括号就是调用了，这时候把i当参数传入，函数立即执行，num保存每次i的值。
+						*/
+				});
+
+
+
+				/* -- 类式继承 -- */
+			　　//先声明一个超类
+			　　function Person(name){
+			　　　　this.name = name;
+			　　}
+			　　//给这个超类的原型对象上添加方法 getName 
+			　　Person.prototype.getName =function(){
+			   　　return this.name;
+			　　}
+			　　//实例化这个超类
+			　　var a =new Person('Darren1')
+			　　alert(a.getName());
+			　　//再声明类
+			　　function Programmer(name,sex){
+			   　　//这个类中要调用超类Person的构造函数，并将参数name传给它
+			   　　Person.call(this,name);
+			   　　this.sex = sex;
+			　　}
+			　 //这个子类的原型对象等于超类的实例
+			　　Programmer.prototype =new Person();
+			　　//因为子类的原型对象等于超类的实例，所以prototype.constructor这个方法也等于超类构造函数，你可以自己测试一下，如果没这一步，alert(Programmer.prototype.constructor)，这个是Person超类的引用，所以要从新赋值为自己本身
+			　　Programmer.prototype.constructor = Programmer;
+			　　//子类本身添加了getSex 方法
+			　　Programmer.prototype.getSex =function(){
+			   　　return this.sex;
+			　　}
+			　　//实例化这个子类
+			　　var _m =new Programmer('Darren2','male');
+			　　//自身的方法
+			　　alert(_m.getSex());
+			　　//继承超类的方法
+			　　alert(_m.getName());
+		   </script>
+	  </body>
+	  
+</html>
